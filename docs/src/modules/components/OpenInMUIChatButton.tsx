@@ -117,6 +117,14 @@ export const RainbowButton = styled(MDButton)(({ theme }) => ({
   },
 }));
 
+const productToPackage: Record<string, string> = {
+  'Material UI': '@mui/material',
+  'Joy UI': '@mui/joy',
+  'Data Grid': '@mui/x-data-grid',
+  'Charts': '@mui/x-charts',
+  'Toolpad Core BETA': '@mui/toolpad-core',
+}
+
 export default function OpenInMUIChatButton(props: OpenInMUIChatButtonProps) {
   const { ...otherProps } = props;
   const { productIdentifier } = React.use(PageContext);
@@ -140,7 +148,7 @@ export default function OpenInMUIChatButton(props: OpenInMUIChatButtonProps) {
           description: document.title,
           type: 'mui-docs',
           package: {
-            name: productIdentifier.name,
+            name: productToPackage[productIdentifier.name] ?? productIdentifier.name,
             version: productIdentifier.versions.find((it) => it.current)?.text ?? 'latest',
           },
           ...props.params,
