@@ -25,6 +25,7 @@ import { useSetCodeVariant } from 'docs/src/modules/utils/codeVariant';
 import { useSetCodeStyling, useCodeStyling } from 'docs/src/modules/utils/codeStylingSolution';
 import { useTranslate } from '@mui/docs/i18n';
 import stylingSolutionMapping from 'docs/src/modules/utils/stylingSolutionMapping';
+import OpenInMUIChatButton from './OpenInMUIChatButton';
 import codeSandbox from '../sandbox/CodeSandbox';
 import stackBlitz from '../sandbox/StackBlitz';
 
@@ -468,6 +469,21 @@ export default function DemoToolbar(props) {
   return (
     <React.Fragment>
       <Root aria-label={t('demoToolbarLabel')} {...toolbarProps}>
+        <OpenInMUIChatButton
+          data-ga-event-category="mui-chat"
+          data-ga-event-label={demo.gaLabel}
+          data-ga-event-action="open-in-mui-chat"
+          {...getControlProps(10)}
+          params={{
+            name: demoName,
+            files: [
+              {
+                path: demo.moduleTS,
+                content: demo.rawTS,
+              },
+            ],
+          }}
+        />
         {hasNonSystemDemos && (
           <Button
             id="styling-solution"
