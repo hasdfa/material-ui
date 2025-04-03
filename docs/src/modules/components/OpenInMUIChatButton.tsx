@@ -20,6 +20,7 @@ interface OpenInMUIChatButtonProps extends ButtonProps {
     files: {
       path: string;
       content: string;
+      isEntry?: boolean;
     }[];
   };
 }
@@ -118,12 +119,11 @@ export const RainbowButton = styled(MDButton)(({ theme }) => ({
 }));
 
 const productToPackage: Record<string, string> = {
-  'Material UI': '@mui/material',
-  'Joy UI': '@mui/joy',
-  'Data Grid': '@mui/x-data-grid',
-  'Charts': '@mui/x-charts',
-  'Toolpad Core BETA': '@mui/toolpad-core',
-}
+  'Material UI': '@mui/material',
+  'Joy UI': '@mui/joy',
+  'Data Grid': '@mui/x-data-grid',
+  Charts: '@mui/x-charts',
+};
 
 export default function OpenInMUIChatButton(props: OpenInMUIChatButtonProps) {
   const { ...otherProps } = props;
@@ -146,12 +146,12 @@ export default function OpenInMUIChatButton(props: OpenInMUIChatButtonProps) {
         },
         body: JSON.stringify({
           description: document.title,
+          ...props.params,
           type: 'mui-docs',
           package: {
             name: productToPackage[productIdentifier.name] ?? productIdentifier.name,
             version: productIdentifier.versions.find((it) => it.current)?.text ?? 'latest',
           },
-          ...props.params,
         }),
       });
 

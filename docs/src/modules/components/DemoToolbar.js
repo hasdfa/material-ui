@@ -480,7 +480,12 @@ export default function DemoToolbar(props) {
               {
                 path: demo.moduleTS,
                 content: demo.rawTS,
+                isEntry: true,
               },
+              ...(demo.relativeModules?.TS ?? []).map((module) => ({
+                path: module.module,
+                content: module.raw,
+              })),
             ],
           }}
         />
