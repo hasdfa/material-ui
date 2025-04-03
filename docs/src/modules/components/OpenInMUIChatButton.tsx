@@ -122,6 +122,8 @@ const productToPackage: Record<string, string> = {
   'Material UI': '@mui/material',
   'Joy UI': '@mui/joy',
   'Data Grid': '@mui/x-data-grid',
+  'Date and Time Pickers': '@mui/x-date-pickers',
+  'Tree View': '@mui/x-tree-view',
   Charts: '@mui/x-charts',
 };
 
