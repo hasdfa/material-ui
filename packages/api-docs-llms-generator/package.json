@@ -1,0 +1,61 @@
+{
+  "name": "@mui/api-docs-llms-generator",
+  "version": "0.0.1-alpha.12",
+  "description": "Generate llms.txt from MUI docs format",
+  "author": "Vadym Raksha <hello@raksha.bio>",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "bin": "./dist/cli.mjs",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build:html-to-md": "(cd ./sharedLibs/go-html-to-md && go build -o html-to-markdown.so -buildmode=c-shared html-to-markdown.go)",
+    "build": "pnpm run build:html-to-md && tsup --silent"
+  },
+  "sideEffects": [],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mui/material-ui.git",
+    "directory": "packages/api-docs-llms-generator"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "@joplin/turndown-plugin-gfm": "^1.0.61",
+    "cheerio": "^1.0.0",
+    "he": "^1.2.0",
+    "koffi": "^2.10.1",
+    "p-queue": "^8.1.0",
+    "parse-imports-exports": "^0.2.4",
+    "pino": "^9.6.0",
+    "pino-pretty": "^13.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tsup": "^8.4.0",
+    "turndown": "^7.2.0",
+    "typescript": "^5.7.3",
+    "yargs": "^17.7.2",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/cheerio": "^0.22.35",
+    "@types/he": "^1.2.3",
+    "@types/turndown": "^5.0.5",
+    "nodemon": "^3.1.9"
+  },
+  "files": [
+    "dist",
+    "package.json",
+    "README.md"
+  ]
+}
