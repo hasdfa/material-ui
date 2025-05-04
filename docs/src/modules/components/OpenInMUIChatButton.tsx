@@ -141,7 +141,7 @@ export default function OpenInMUIChatButton(props: OpenInMUIChatButtonProps) {
     setError(null);
 
     try {
-      const response = await fetch(`${baseUrl}/api/v1/public/chat/open`, {
+      const response = await fetch(`${baseUrl}/v1/public/chat/open`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
