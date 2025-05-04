@@ -133,7 +133,7 @@ export default function OpenInMUIChatButton(props: OpenInMUIChatButtonProps) {
 
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<Error | null>(null);
-  const baseUrl = process.env.NEXT_PUBLIC_MUI_CHAT_BASE_URL;
+  const baseUrl = process.env.NEXT_PUBLIC_MUI_CHAT_API_BASE_URL;
 
   const handleClick = async () => {
     // Debounce the loading state to avoid flickering
