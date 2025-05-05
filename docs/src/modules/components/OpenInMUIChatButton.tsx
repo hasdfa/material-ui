@@ -1,5 +1,6 @@
 /* eslint-disable material-ui/no-hardcoded-labels */
 import * as React from 'react';
+import { useRouter } from 'next/router';
 import { styled, keyframes } from '@mui/material/styles';
 import MDButton, { ButtonProps } from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -8,6 +9,7 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import SvgMuiLogomark from 'docs/src/icons/SvgMuiLogomark';
 import PageContext from './PageContext';
+import getProductInfoFromUrl from '../utils/getProductInfoFromUrl';
 
 interface OpenInMUIChatButtonProps extends ButtonProps {
   params: {
@@ -119,17 +121,21 @@ export const RainbowButton = styled(MDButton)(({ theme }) => ({
 }));
 
 const productToPackage: Record<string, string> = {
-  'Material UI': '@mui/material',
-  'Joy UI': '@mui/joy',
-  'Data Grid': '@mui/x-data-grid',
-  'Date and Time Pickers': '@mui/x-date-pickers',
-  'Tree View': '@mui/x-tree-view',
-  Charts: '@mui/x-charts',
+  'material-ui': '@mui/material',
+  'joy-ui': '@mui/joy',
+  'x-data-grid': '@mui/x-data-grid',
+  'x-date-pickers': '@mui/x-date-pickers',
+  'x-tree-view': '@mui/x-tree-view',
+  'x-charts': '@mui/x-charts',
 };
 
 export default function OpenInMUIChatButton(props: OpenInMUIChatButtonProps) {
   const { ...otherProps } = props;
   const { productIdentifier } = React.use(PageContext);
+  const router = useRouter();
+  const productId = getProductInfoFromUrl(router.asPath).productId;
+  const packageName = productToPackage[productId];
+  const packageVersion = (productIdentifier.versions.find((it) => it.current)?.text ?? productIdentifier.versions?.[0]?.text)?.slice(1) ?? 'latest';
 
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<Error | null>(null);
@@ -151,8 +157,8 @@ export default function OpenInMUIChatButton(props: OpenInMUIChatButtonProps) {
           ...props.params,
           type: 'mui-docs',
           package: {
-            name: productToPackage[productIdentifier.name] ?? productIdentifier.name,
-            version: productIdentifier.versions.find((it) => it.current)?.text ?? 'latest',
+            name: packageName,
+            version: packageVersion,
           },
         }),
       });
