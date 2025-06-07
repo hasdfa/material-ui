@@ -1,6 +1,6 @@
 {
-  "name": "@mui/api-docs-llms-generator",
-  "version": "0.0.1-alpha.12",
+  "name": "@vraksha/mui-docs-llms-generator",
+  "version": "0.0.6",
   "description": "Generate llms.txt from MUI docs format",
   "author": "Vadym Raksha <hello@raksha.bio>",
   "main": "dist/index.js",
@@ -19,7 +19,8 @@
   },
   "scripts": {
     "build:html-to-md": "(cd ./sharedLibs/go-html-to-md && go build -o html-to-markdown.so -buildmode=c-shared html-to-markdown.go)",
-    "build": "pnpm run build:html-to-md && tsup --silent"
+    "build:tsup": "tsup --silent",
+    "build": "pnpm run build:html-to-md && pnpm run build:tsup"
   },
   "sideEffects": [],
   "repository": {

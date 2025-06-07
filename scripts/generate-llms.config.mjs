@@ -19,10 +19,12 @@ const readPackageJson = (filepath) => {
 
 export default {
   upload: {
+    apiHost: 'http://127.0.0.1:5003',
     apiToken: "abc-token",
   },
   entities: [
     {
+      id: 'material-ui',
       package: readPackageJson("packages/mui-material"),
       repoRootDir,
       docsRootDir,
@@ -34,6 +36,7 @@ export default {
           'getting-started/templates/templates.md',
           'discover-more/showcase/showcase.md',
           'example-projects/example-projects.md',
+          /getting-started\/templates\/.*/,
         ],
       },
       outputDir: path.join(repoRootDir, ".llms/material"),
@@ -42,6 +45,7 @@ export default {
       },
     },
     {
+      id: 'joy-ui',
       package: readPackageJson("packages/mui-joy"),
       repoRootDir,
       docs: {

@@ -6,5 +6,5 @@ export default async function reactRenderComponentToHtml(filePath: string) {
     module = module.default;
   }
 
-  return ReactDOM.renderToString(module.default);
+  return ReactDOM.renderToStaticMarkup(module.default);
 }

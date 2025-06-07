@@ -56,7 +56,7 @@ export function renderApiPageHtml(data: ApiPageContent) {
   const code = (text: string) => `<code>${text}</code>`
   const pre = (text: string) => `<pre>${code(text)}</pre>`
   const tr = (...rows: string[]) => `<tr>${rows.map(it => `<td>${it}</td>`).join('')}</tr>`
-  const alert = (text: string, severity: 'info' | 'success' | 'warning' | 'error' = 'info') => `:::${severity}\n${text}\n:::`
+  const alert = (text: string, severity: 'info' | 'success' | 'warning' | 'error' = 'info') => `<${severity}-block>\n${text}\n</${severity}-block>`
 
   const getRefForwardingText = () => {
     if (forwardsRefTo === null) {

@@ -59,10 +59,12 @@ export default async function parseDocsMarkdownEmbeddings(content: string, pathn
     return acc;
   }, {} as Record<string, string>);
 
+
   return {
     content,
     embeddings,
     metadata: {
+      title: /^# (.*)$/mi.exec(content)?.[1] ?? '',
       ...(documentMetadata ?? {}),
       description: await parseMarkdown(
         /<p[^>]*>(.*)<\/p>/gi.exec(content)?.[1] ?? ''

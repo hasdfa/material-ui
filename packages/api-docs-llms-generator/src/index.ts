@@ -29,19 +29,21 @@ interface DemoDocument {
     title?: string;
     components?: string[];
     description: string;
+    pathname: string;
   };
 }
 
 type ApiDocument = ApiPageContent & {
   description: string;
+  pathname: string;
 }
 
 const staticDocsReplacements = [
-  {
-    // Remove the markdown metadata
-    token: /^---\n([\s\S]*?)\n---\n/,
-    resolved: '',
-  },
+  // {
+  //   // Remove the markdown metadata
+  //   token: /^---\n([\s\S]*?)\n---\n/,
+  //   resolved: '',
+  // },
   {
     // Remove <p> tags
     token: /<p[^>]*>(.*)<\/p>/gi,
@@ -50,7 +52,14 @@ const staticDocsReplacements = [
   {
     // Replace the plan badge with a text
     token: /\[?<span class="plan-(premium|pro)"><\/span>\]\(\/x\/introduction\/licensing\/#(?:premium|pro)-plan '(\w+) plan'\)/g,
-    resolved: '**$2 plan**',
+    // resolved: '**$2 plan**',
+    resolved: '\n\n\n<info-block>\nPreview environments require a [**$2** MUI X Plan](/docs/professional-features) or higher.\n</info-block>\n',
+  },
+  {
+    // Replace the :::status with <status-block>
+    token: /:::(info|success|warning|error)[\s\S]*?:::/gi,
+    // resolved: '**$2 plan**',
+    resolved: '<$1-block>\n$2\n</$1-block>\n',
   },
   {
     // Replace relative paths with absolute paths
@@ -76,9 +85,18 @@ async function readDocs(docs: RenderPackageLLMsDocs, options: RenderPackageLLMsO
     if (exclude(filePath, docs.exclude)) { return; }
 
     const fileContent = await fs.readFile(filePath, 'utf8');
-    
+
+    const extLength = path.extname(filePath).length;
+    const pathFilename = path.basename(filePath).slice(0, -extLength);
+    const pathDirname = path.dirname(filePath).split('/').pop() ?? '';
+    const resolvedPathname = path.relative(docs.dataRootDir,
+      pathFilename === pathDirname
+        ? path.dirname(filePath)
+        : filePath.slice(0, -extLength)
+    );
+
     const { content: baseContent, embeddings, metadata } = await parseDocsMarkdownEmbeddings(
-      fileContent, path.dirname(filePath),
+      fileContent, resolvedPathname,
     );
     const resolvedEmbeddings = [
       ...staticDocsReplacements,
@@ -134,9 +152,10 @@ async function readApis(api: RenderPackageLLMsApi, docs: DemoDocument[]) {
     documents.push({
       ...unescapeHtmlDeep(fileJson),
       description: relatedDoc?.metadata.description ?? '',
+      pathname: path.relative(api.dataRootDir, filePath.slice(0, -path.extname(filePath).length)),
     });
   }))
-  
+
   return documents;
 }
 
@@ -179,22 +198,33 @@ export async function renderPackageLLMs(options: RenderPackageLLMsOptions): Prom
 }
 
 async function saveMarkdown(outputDir: string, results: RenderPackageLLMsResult) {
-  await fs.rm(outputDir, { recursive: true }).catch(() => {});
+  await fs.rm(outputDir, { recursive: true, force: true }).catch(() => {});
   await fs.mkdir(outputDir, { recursive: true }).catch(() => {});
+
+  await fs.writeFile(path.join(outputDir, 'results.json'), JSON.stringify(results, null, 2));
 
   const llmsFull: { content: string }[] = [];
   if (results.docs) {
     const content = documentToLLMs(results.docs);
     llmsFull.push({ content });
 
-    await fs.writeFile(path.join(outputDir, 'llms-docs.txt'), content);
+    for (const doc of results.docs) {
+      const filePath = path.join(outputDir, `${doc.metadata.pathname}.md`);
+      await fs.mkdir(path.dirname(filePath), { recursive: true }).catch(() => {});
+      await fs.writeFile(filePath, doc.content);
+    }
   }
+
   if (results.api) {
-    const contents = await Promise.all(results.api.map(async (it) => ({ content: await fetchApiContent(it) })));
+    const contents = await Promise.all(results.api.map(async (it) => ({ ...it, content: await fetchApiContent(it) })));
     const content = documentToLLMs(contents);
     llmsFull.push({ content });
 
-    await fs.writeFile(path.join(outputDir, 'llms-api.txt'), content);
+    for (const doc of contents) {
+      const filePath = path.join(outputDir, `api/${doc.pathname}.md`);
+      await fs.mkdir(path.dirname(filePath), { recursive: true }).catch(() => {});
+      await fs.writeFile(filePath, doc.content);
+    }
   }
 
   await fs.writeFile(path.join(outputDir, 'llms-full.txt'), documentToLLMs(llmsFull));
@@ -210,31 +240,22 @@ export async function renderAndSavePackageLLMs(options: Omit<RenderPackageLLMsOp
   await saveMarkdown(outputDir, results);
 }
 
-const backendHostsList = {
-  production: 'https://chat-backend.mui.com',
-  development: 'http://localhost:5003',
-}
-
 async function uploadResults(
   options: RenderPackageLLMsOptions,
-  config: UploadConfig,
+  uploadConfig: UploadConfig,
   results: RenderPackageLLMsResult,
 ) {
-  // const llmsTxt = markdown.full;
-  // const llmsDocsTxt = markdown.docs;
-  // const llmsApiTxt = markdown.api;
-
-  // console.log(llmsTxt);
-  const backendHost = backendHostsList[process.env.NODE_ENV as keyof typeof backendHostsList]
-    ?? backendHostsList.development;
-  const response = await fetch(`${backendHost}/v1/internal/import/docs/batch`, {
+  const response = await fetch(`${uploadConfig.apiHost}/v1/internal/import/docs/batch`, {
     method: 'POST',
     headers: {
-      'X-Api-Key': config.apiToken,
+      'X-Api-Key': uploadConfig.apiToken,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      package: options.package,
+      package: {
+        id: options.id,
+        ...options.package,
+      },
       docs: results.docs,
       api: results.api,
     }),
@@ -248,7 +269,7 @@ async function uploadResults(
 
 export async function renderAndUploadPackageLLMs(
   options: RenderPackageLLMsOptions,
-  config: UploadConfig,
+  uploadConfig: UploadConfig | undefined,
 ): Promise<void> {
   const { outputDir, ...rest } = options;
   const results = await renderPackageLLMs(rest);
@@ -257,5 +278,7 @@ export async function renderAndUploadPackageLLMs(
     await saveMarkdown(outputDir, results);
   }
 
-  await uploadResults(options, config, results);
+  if (uploadConfig) {
+    await uploadResults(options, uploadConfig, results);
+  }
 }

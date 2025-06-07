@@ -3,6 +3,7 @@ import { z } from 'zod';
 const excludeSchema = z.array(z.union([z.string(), z.instanceof(RegExp)]));
 
 export const RenderPackageLLMsOptionsSchema = z.object({
+  id: z.string(),
   package: z.object({
     name: z.string(),
     version: z.string(),
@@ -50,10 +51,11 @@ export type RenderPackageLLMsApi = NonNullable<RenderPackageLLMsOptions['api']>;
 
 export const uploadConfigSchema = z.object({
   apiToken: z.string(),
+  apiHost: z.string(),
 });
 
 export const renderInputConfigSchema = z.object({
-  upload: uploadConfigSchema,
+  upload: uploadConfigSchema.optional(),
   entities: z.array(RenderPackageLLMsOptionsSchema),
 });
 
